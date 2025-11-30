@@ -1,0 +1,27 @@
+# nginx/default.conf
+
+upstream frontend_service {
+    server frontend:80;
+}
+
+upstream backend_service {
+    server backend:3000;
+}
+
+server {
+    listen 80;
+
+    # Serve Angular UI
+    location / {
+        proxy_pass http://frontend_service;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # API calls - adjust path if backend uses different prefix
+    location /api/ {
+        proxy_pass http://backend_service;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}

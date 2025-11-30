@@ -1,0 +1,27 @@
+# frontend/Dockerfile
+
+# Stage 1: Build Angular app
+FROM node:18-alpine AS build
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+# If Angular version requires different build cmd, adjust accordingly
+RUN npm run build -- --configuration production
+
+# Stage 2: Nginx to serve the built app
+FROM nginx:alpine
+
+# Remove default nginx static files
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy built Angular app
+COPY --from=build /usr/src/app/dist/ /usr/share/nginx/html/
+
+# Expose HTTP port
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
